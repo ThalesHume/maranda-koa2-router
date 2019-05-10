@@ -1,0 +1,30 @@
+{
+  "name": "maranda-koa2-router",
+  "version": "1.0.0",
+  "description": "maranda koa2 router",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yu87109/maranda-koa2-router.git"
+  },
+  "keywords": [
+    "maranda",
+    "koa2",
+    "router"
+  ],
+  "author": "Sunny",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yu87109/maranda-koa2-router/issues"
+  },
+  "homepage": "https://github.com/yu87109/maranda-koa2-router#readme",
+  "dependencies": {
+    "@types/koa-router": "^7.0.40",
+    "@types/mz": "0.0.32",
+    "koa-router": "^7.4.0",
+    "mz": "^2.7.0"
+  }
+}
