@@ -3,7 +3,7 @@ npm i --save maranda-koa2-router
 ```
 // type1
 //app.ts
-import {MarandaRouter, koaRouter, LoadRouterFile, MarandaMiddleware as Middleware} from '../../koa2-router';
+import {MarandaRouter, koaRouter, LoadRouterFile, MarandaMiddleware as Middleware} from 'maranda-koa2-router';
 import Koa from 'koa';
 import {join} from 'path'
 
@@ -88,7 +88,7 @@ export {a0, b1}
 // localhost/     -> indeX
 // localhost/a0   -> a0X
 // localhost/b1   -> b1undefined
-// localhost/b1/x -> bb1undefined
+// localhost/b1/x -> b1undefined
 ```
 
 ```
