@@ -1,12 +1,12 @@
-#useage
+# useage
 
-npm i --save maranda-koa2-router
+##### npm i --save maranda-koa2-router
 
-// for the complete maranda koa server case, with static, session-mysql, koabody, router
+### for the complete maranda koa server case, with static, session-mysql, koabody, router
 
-// please visit https://github.com/yu87109/maranda-koa-server-example
+### please visit https://github.com/yu87109/maranda-koa-server-example
 
-//this example is used for ts, if you are js user, if can use as almost the same, just delete the type define.
+### this example is used for ts, if you are js user, if can use as almost the same, just delete the type define.
 ``` typescript
 // type1
 //app.ts

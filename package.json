@@ -1,6 +1,6 @@
 {
   "name": "maranda-koa2-router",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "maranda koa2 router",
   "main": "index.js",
   "scripts": {
