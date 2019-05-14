@@ -1,6 +1,13 @@
 #useage
+
 npm i --save maranda-koa2-router
-```
+
+// for the complete maranda koa server case, with static, session-mysql, koabody, router
+
+// please visit https://github.com/yu87109/maranda-koa-server-example
+
+//this example is used for ts, if you are js user, if can use as almost the same, just delete the type define.
+``` typescript
 // type1
 //app.ts
 import {MarandaRouter, koaRouter, LoadRouterFile, MarandaMiddleware as Middleware} from 'maranda-koa2-router';
@@ -30,18 +37,16 @@ const Opts = {
 const app = new Koa<{a:string},{b:number}>();
 const Router = new MarandaRouter<{a:string},{b:number}>({Path, Opts});
 //for other init types
-/*  type2
-*   const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
-*  Router.LoadRouterFile(Path, true); 
-*/
-/*  type3
-*   const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
-*   LoadRouterFile.call(Router, Path); 
-*/
-/*  type4  only can use the koa-router opts
-*   const Router = new koaRouter({sensitive:true});
-*   LoadRouterFile.call(Router, Path) 
-*/
+// type2
+const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
+Router.LoadRouterFile(Path, true); 
+// type3
+const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
+LoadRouterFile.call(Router, Path); 
+// type4  only can use the koa-router opts
+const Router = new koaRouter({sensitive:true});
+LoadRouterFile.call(Router, Path) 
+
 
 Router.get('/', async(ctx, next)=>{
     ctx.state.a = 'X'
@@ -91,7 +96,7 @@ export {a0, b1}
 // localhost/b1/x -> b1undefined
 ```
 
-```
+```typescript
 // type2
 //app.ts
 const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
@@ -112,3 +117,8 @@ router.then(()=>{
     console.log('app started at port 8080...');
 })
 ```
+
+
+---
+
+[for more Versions, click see the changelog](./CHANGELOG.md)
