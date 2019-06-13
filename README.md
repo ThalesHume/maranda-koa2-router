@@ -16,8 +16,8 @@ import { join as pathJoin } from 'path'
 interface Ctx {
     // your custom context
 }
-export type Route = Router.Route;
-export type Middleware = KoaRouter.IMiddleware<any, Ctx>;
+export type Route = Router.Route<any, Ctx>;
+export type Middleware = Router.Middleware<any, Ctx>;
 
 const app = new Koa<any,Ctx>();
 const router = new Router<any, Ctx>(pathJoin(__dirname,'Routers'),{..});
