@@ -8,111 +8,69 @@
 
 ### this example is used for ts, if you are js user, if can use as almost the same, just delete the type define.
 ``` typescript
-// type1
 //app.ts
-import {MarandaRouter, koaRouter, LoadRouterFile, MarandaMiddleware as Middleware} from 'maranda-koa2-router';
+import Router,{ koaRouter } from 'maranda-koa2-router';
 import Koa from 'koa';
-import {join} from 'path'
+import { join as pathJoin } from 'path'
 
-export type MarandaMiddleware = Middleware<{a:string},{b:number}>
-
-const Path =join(__dirname,'Routers');
-//for array path , the router file must end with '.js'
-/* const path = [
-    join(__dirname,'YourRouteDIR1'),
-    join(__dirname,'YourRouteDIR2'),
-    join(__dirname,'ajax.js')
-] */
-const Opts = {
-    end: true
+interface Ctx {
+    // your custom context
 }
-//for more opts
-/*  end?: boolean,
-    prefix?: string,
-    ignoreCaptures?:boolean
-    name?: string;
-    sensitive?: boolean;
-    strict?: boolean;
- */
-const app = new Koa<{a:string},{b:number}>();
-const Router = new MarandaRouter<{a:string},{b:number}>({Path, Opts});
-//for other init types
-// type2
-const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
-Router.LoadRouterFile(Path, true); 
-// type3
-const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
-LoadRouterFile.call(Router, Path); 
-// type4  only can use the koa-router opts
-const Router = new koaRouter({sensitive:true});
-LoadRouterFile.call(Router, Path) 
+export type Route = Router.Route;
+export type Middleware = KoaRouter.IMiddleware<any, Ctx>;
 
-
-Router.get('/', async(ctx, next)=>{
-    ctx.state.a = 'X'
-    ctx.body = 'inde';
+const app = new Koa<any,Ctx>();
+const router = new Router<any, Ctx>(pathJoin(__dirname,'Routers'),{..});
+router.get('/', async(ctx, next)=>{
+    ...
     await next();
+    ...
 });
-app.use(Router.routes())
-app.use(async (ctx)=>{
-	ctx.body += ctx.state.a;
-})
+app.use(router.routes())
 
 app.listen(8080)
 console.log('app started at port 8080...');
 
-#Routers/ajax/text.js
 //Routers/ajax/text.ts
-import {MarandaMiddleware} from '../../app';
+import { Route } from '../../app';
+import { middleware1 } from '../Middlewares/a'
+import { middleware2 } from '../Middlewares/b'
+import { middleware3 } from '../Middlewares/c'
 
-const a0:MarandaMiddleware = {
+const a0:Route = {
     path: '/a0',
     methods: ['get'],
-    middleware: [
-        async(ctx, next) =>{
-            ctx.b = 0;
-			ctx.state.a ='X'
-            await next()
-        },
-        async(ctx, next) =>{
-            ctx.body = `a${ctx.b}`
-            await next()
-        },
-    ]
+    middleware: middleware1
 }
-const b1:MarandaMiddleware ={
+const b1:Route ={
     path: ['/b1','/b1/x'],
     methods: ['get'],
-    middleware: async(ctx, next) =>{
-		ctx.body = 'b1'
-        await next()
-    }
+    middleware: [middleware2,middleware3]
 }
 export {a0, b1}
 
-// localhost/     -> indeX
-// localhost/a0   -> a0X
-// localhost/b1   -> b1undefined
-// localhost/b1/x -> b1undefined
+//Middlewares/a.ts
+import { Middleware } from '../../app'
+export middleware1:Middleware = aysnc (ctx, next) => {
+    ...
+    await next();
+    ...
+}
+
 ```
 
 ```typescript
 // type2
 //app.ts
-const Router = new MarandaRouter<{a:string},{b:number}>({Opts});
-//or: const Router = new koaRouter({sensitive:true});
-const router = <Promise<void>>Router.LoadRouterFile(Path, false);
-router.then(()=>{
-    Router.get('/', async(ctx, next)=>{
-        ctx.state.a = 'X'
-        ctx.body = 'inde';
+const router = Router.LoadRoutes<any, Ctx>(pathJoin(__dirname,'Routers'),{..});
+....
+router.then((rt)=>{
+    rt.get('/', async(ctx, next)=>{
+        ...
         await next();
+        ...
     });
-    app.use(Router.routes())
-    app.use(async (ctx)=>{
-        ctx.body += ctx.state.a;
-    })
-	
+    app.use(rt.routes())
     app.listen(8080)
     console.log('app started at port 8080...');
 })

@@ -1,80 +1,85 @@
-import router from 'koa-router';
-import {fs} from 'mz';
-import {join as pathJoin} from 'path';
+import KoaRouter from 'koa-router';
+import { fs as Fs } from 'mz';
+import { join as pathJoin, extname as extName } from 'path';
 
-type SyncFile = {[key:string]:MarandaMiddleware<any, any>}[];
-type AsyncFile = Promise<{[key:string]:MarandaMiddleware<any, any>}>[];
-interface RouteOps {
-    name?: string;
-    sensitive?: boolean;
-    strict?: boolean;
-    end?: boolean,
-    prefix?: string,
-    ignoreCaptures?:boolean
-}
-function LoadFolder(path:string, modules:SyncFile|AsyncFile, type:string){
-    const files = fs.readdirSync(path);
-    for (const f of files) {
-        const stat = fs.statSync(pathJoin(path, f));
-        if (stat.isFile() && /\.[t|j]s$/.test(f)) {
-            if (type === 'sync') {
-                (<SyncFile>modules).push(require(pathJoin(path, f)))
-            }else if (type === 'async') {
-                (<AsyncFile>modules).push(import(pathJoin(path, f)))
-            }
-        }else if (stat.isDirectory()) {
-            LoadFolder(pathJoin(path, f),modules, type);
-        }
-    }
-};
-function LoadFiles(RouterPath:string[]|string, type:'sync'|'async'){
-    const modules:SyncFile|AsyncFile = [];
-    const path = typeof RouterPath == 'string' ? [RouterPath] : RouterPath;
+type SyncFile = { [key: string]: Router.Route };
+type AsyncFile = Promise<{ [key: string]: Router.Route }>;
+function LoadFiles(filePaths: string[] | string, fileExt: string, type: 'sync' | 'async') {
+    const modules: SyncFile[] | AsyncFile[] = [];
+    const path = typeof filePaths == 'string' ? [filePaths] : filePaths;
     for (const f of path) {
-        const stat = fs.statSync(f);
-        if (stat.isFile() && /\.js$/.test(f)) {
+        const stat = Fs.statSync(f);
+        if (stat.isFile() && extName(f) == `.${fileExt}`) {
             if (type === 'sync') {
-                (<SyncFile>modules).push(require(f))
-            }else if (type === 'async') {
-                (<AsyncFile>modules).push(import(f))
+                (<SyncFile[]>modules).push(require(f))
+            } else if (type === 'async') {
+                (<AsyncFile[]>modules).push(import(f))
             }
-        }else if (stat.isDirectory()) {
-            LoadFolder(f, modules, type);
+        } else if (stat.isDirectory()) {
+            LoadFolder(f, modules, fileExt, type);
         }
     }
     return modules;
 }
-function RegisterRouter(M:{[key:string]:MarandaMiddleware<any, any>}){
-    Object.keys(M).forEach((key)=>{
-        if (M[key].path && M[key].methods && M[key].middleware) {
-            // @ts-ignore
-            this.register(M[key].path, M[key].methods, M[key].middleware, M[key].opts)
+function LoadFolder(folderPath: string, modules: SyncFile[] | AsyncFile[], fileExt: string, type: string) {
+    const files = Fs.readdirSync(folderPath);
+    for (const f of files) {
+        const stat = Fs.statSync(pathJoin(folderPath, f));
+        if (stat.isFile() && extName(f) == `.${fileExt}`) {
+            if (type === 'sync') {
+                (<SyncFile[]>modules).push(require(pathJoin(folderPath, f)))
+            } else if (type === 'async') {
+                (<AsyncFile[]>modules).push(import(pathJoin(folderPath, f)))
+            }
+        } else if (stat.isDirectory()) {
+            LoadFolder(pathJoin(folderPath, f), modules, fileExt, type);
+        }
+    }
+};
+function RegisterRoutes<R extends KoaRouter<any, any>>(this: R, routes: SyncFile) {
+    Object.keys(routes).forEach((key) => {
+        if (routes[key].path && routes[key].methods && routes[key].middleware) {
+            //@ts-ignore
+            this.register(routes[key].path, routes[key].methods, routes[key].middleware, routes[key].opts)
         }
     })
 }
-export async function LoadRouterFile<R extends router<any,any>>(this: R, RouterPath:string[]|string, sync:boolean = true){
-    if (sync) {
-        const modules = <SyncFile>LoadFiles(RouterPath, 'sync');
-        for (const M of modules) {RegisterRouter.call(this, M);}
-    }else{
-        const modules = <AsyncFile>LoadFiles(RouterPath, 'async');
-        for (const M of modules) {RegisterRouter.call(this, await M);}
+class Router<StateT, CustomT> extends KoaRouter<StateT, CustomT>{
+    constructor(filePaths: string[] | string);
+    constructor(filePaths: string[] | string, fileExt: string);
+    constructor(filePaths: string[] | string, fileExt: string, RouterOpts: Router.Options);
+    constructor(filePaths: string[] | string, fileExt?: string, RouterOpts?: Router.Options) {
+        super(RouterOpts);
+        fileExt = fileExt || 'js';
+        const modules = <SyncFile[]>LoadFiles(filePaths, fileExt, 'sync');
+        for (const module of modules) { RegisterRoutes.call(this, module); }
     }
 }
-export type MarandaMiddleware<StateT, CustomT> = {
-    path: string | string[] | RegExp | RegExp[],
-    methods: string[],
-    middleware: router.IMiddleware<StateT, CustomT> | router.IMiddleware<StateT, CustomT>[],
-    opts?: RouteOps
-};
-export class MarandaRouter<StateT, CustomT> extends router<StateT, CustomT>{
-    readonly LoadRouterFile: typeof LoadRouterFile;
-    constructor(RouterOptions?:{Path?:string[]|string, Opts?:RouteOps}){
-        const path = RouterOptions ? RouterOptions.Path : undefined;
-        const opts = RouterOptions ? RouterOptions.Opts : undefined;
-        super(opts);
-        this.LoadRouterFile = LoadRouterFile.bind(this);
-        if (path) {this.LoadRouterFile(path)}
+namespace Router {
+    export interface Route {
+        path: string | string[] | RegExp | RegExp[],
+        methods: string[],
+        middleware: KoaRouter.IMiddleware | KoaRouter.IMiddleware[],
+        opts?: Router.Options
+    };
+    export interface Options {
+        name?: string;
+        sensitive?: boolean;
+        strict?: boolean;
+        end?: boolean,
+        prefix?: string,
+        ignoreCaptures?: boolean
+    }
+    export async function LoadRoutes<StateT, CustomT>(filePaths: string[] | string): Promise<KoaRouter<StateT, CustomT>>;
+    export async function LoadRoutes<StateT, CustomT>(filePaths: string[] | string, fileExt: string): Promise<KoaRouter<StateT, CustomT>>;
+    export async function LoadRoutes<StateT, CustomT>(filePaths: string[] | string, fileExt: string, RouterOpts: Router.Options): Promise<KoaRouter<StateT, CustomT>>;
+    export async function LoadRoutes<StateT, CustomT>(filePaths: string[] | string, fileExt?: string, RouterOpts?: Router.Options) {
+        fileExt = fileExt || 'js';
+        const modules = <AsyncFile[]>LoadFiles(filePaths, fileExt, 'async');
+        const router = new KoaRouter<StateT, CustomT>(RouterOpts);
+        for (const module of modules) { RegisterRoutes.call(router, await module); }
+        return router;
     }
 }
-export {router as koaRouter}
+export default Router;
+export { KoaRouter }

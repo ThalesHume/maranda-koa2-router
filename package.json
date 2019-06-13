@@ -1,10 +1,10 @@
 {
   "name": "maranda-koa2-router",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "maranda koa2 router",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rimraf index.d.ts && tsc"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,8 @@
     "@types/mz": "0.0.32",
     "koa-router": "^7.4.0",
     "mz": "^2.7.0"
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.3"
   }
 }
