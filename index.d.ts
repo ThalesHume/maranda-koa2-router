@@ -5,12 +5,13 @@ declare class Router<StateT, CustomT> extends KoaRouter<StateT, CustomT> {
     constructor(filePaths: string[] | string, fileExt: string, RouterOpts: Router.Options);
 }
 declare namespace Router {
-    interface Route {
+    interface Route<StateT, CustomT> {
         path: string | string[] | RegExp | RegExp[];
         methods: string[];
-        middleware: KoaRouter.IMiddleware | KoaRouter.IMiddleware[];
+        middleware: Middleware<StateT, CustomT> | Middleware<StateT, CustomT>[];
         opts?: Router.Options;
     }
+    type Middleware<StateT, CustomT> = KoaRouter.IMiddleware<StateT, CustomT>;
     interface Options {
         name?: string;
         sensitive?: boolean;

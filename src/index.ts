@@ -2,8 +2,8 @@ import KoaRouter from 'koa-router';
 import { fs as Fs } from 'mz';
 import { join as pathJoin, extname as extName } from 'path';
 
-type SyncFile = { [key: string]: Router.Route };
-type AsyncFile = Promise<{ [key: string]: Router.Route }>;
+type SyncFile = { [key: string]: Router.Route<any, any> };
+type AsyncFile = Promise<{ [key: string]: Router.Route<any, any> }>;
 function LoadFiles(filePaths: string[] | string, fileExt: string, type: 'sync' | 'async') {
     const modules: SyncFile[] | AsyncFile[] = [];
     const path = typeof filePaths == 'string' ? [filePaths] : filePaths;
@@ -56,12 +56,13 @@ class Router<StateT, CustomT> extends KoaRouter<StateT, CustomT>{
     }
 }
 namespace Router {
-    export interface Route {
+    export interface Route<StateT, CustomT> {
         path: string | string[] | RegExp | RegExp[],
         methods: string[],
-        middleware: KoaRouter.IMiddleware | KoaRouter.IMiddleware[],
+        middleware: Middleware<StateT, CustomT> | Middleware<StateT, CustomT>[],
         opts?: Router.Options
     };
+    export type Middleware<StateT, CustomT> = KoaRouter.IMiddleware<StateT, CustomT>;
     export interface Options {
         name?: string;
         sensitive?: boolean;

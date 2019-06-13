@@ -3,9 +3,7 @@
   "version": "2.0.0",
   "description": "maranda koa2 router",
   "main": "index.js",
-  "scripts": {
-    "build": "rimraf index.d.ts && tsc"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yu87109/maranda-koa2-router.git"
@@ -26,8 +24,5 @@
     "@types/mz": "0.0.32",
     "koa-router": "^7.4.0",
     "mz": "^2.7.0"
-  },
-  "devDependencies": {
-    "rimraf": "^2.6.3"
   }
 }
